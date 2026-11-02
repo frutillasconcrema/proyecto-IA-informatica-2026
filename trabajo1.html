@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6f2">
+    <meta
+      name="description"
+      content="Agenda participativa para organizar fechas, avisos y entregas de la cursada."
+    >
+    <title>En común — Agenda de cursada</title>
+    <link rel="stylesheet" href="trabajo2.css">
+    <script src="trabajo3.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="En común, inicio">
+        <span class="brand-mark" aria-hidden="true">e</span>
+        <span>en común<span class="brand-period">.</span></span>
+      </a>
+
+      <div class="header-context">
+        <span class="context-dot" aria-hidden="true"></span>
+        <span>Espacio de cursada</span>
+      </div>
+
+      <div class="role-control">
+        <label for="user-role">Estoy acá como</label>
+        <select id="user-role" name="role">
+          <option value="estudiante">Estudiante</option>
+          <option value="docente">Docente</option>
+          <option value="delegado">Delegado/a</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="page-layout">
+      <section class="agenda" aria-labelledby="page-title">
+        <div class="page-intro">
+          <div>
+            <p class="eyebrow">ORGANIZACIÓN COMPARTIDA</p>
+            <h1 id="page-title">Agenda de cursada</h1>
+            <p class="intro-copy">
+              Todo lo importante de la materia, en un mismo lugar.
+            </p>
+          </div>
+          <button class="button button-primary" id="open-event-dialog" type="button">
+            <span class="button-plus" aria-hidden="true">+</span>
+            Nuevo evento
+          </button>
+        </div>
+
+        <section class="agenda-board" aria-label="Eventos de la cursada">
+          <div class="board-toolbar">
+            <div class="filters" role="group" aria-label="Filtrar eventos">
+              <button class="filter-button is-active" type="button" data-filter="todos" aria-pressed="true">Todos</button>
+              <button class="filter-button" type="button" data-filter="examen" aria-pressed="false">Exámenes</button>
+              <button class="filter-button" type="button" data-filter="aviso" aria-pressed="false">Avisos</button>
+              <button class="filter-button" type="button" data-filter="entrega" aria-pressed="false">Entregas</button>
+            </div>
+            <span class="event-count" id="event-count" aria-live="polite">0 eventos</span>
+          </div>
+
+          <div class="event-grid" id="event-grid" aria-live="polite">
+            <div class="empty-state" id="empty-state">
+              <span class="empty-illustration" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <rect x="12" y="16" width="40" height="36" rx="8" fill="currentColor" opacity=".12"/>
+                  <path d="M21 12v9M43 12v9M13 27h38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M24 36h5m6 0h5m-16 8h5m6 0h5" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".65"/>
+                </svg>
+              </span>
+              <h2>La agenda empieza acá</h2>
+              <p>Sumá el primer examen, aviso o entrega para compartirlo con el curso.</p>
+              <button class="text-button" id="empty-state-add" type="button">Crear un evento <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="chat-panel" aria-labelledby="chat-title">
+        <template id="cat-icon-template">
+          <svg class="cat-icon" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M6.5 13.2 5 4.5l8 4.1a12.1 12.1 0 0 1 6 0l8-4.1-1.5 8.7a11.5 11.5 0 1 1-19 0Z" fill="currentColor"/>
+            <path d="M11 16.3a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8Zm10 0a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8Z" fill="#c6d5ff"/>
+            <path d="m14.5 18.5 1.5-1 1.5 1-1.5 1.4-1.5-1.4Z" fill="#f3a5b2"/>
+            <path d="M16 19.8v1.1m0 0-2.1 1.5m2.1-1.5 2.1 1.5" fill="none" stroke="#fff" stroke-linecap="round" stroke-width=".9"/>
+          </svg>
+        </template>
+        <header class="chat-header">
+          <div class="chat-avatar" aria-hidden="true"></div>
+          <div class="chat-heading">
+            <p class="chat-kicker">ASISTENTE DE CURSADA</p>
+            <h2 id="chat-title">Lalu</h2>
+            <span class="online-status"><span aria-hidden="true"></span>En línea</span>
+          </div>
+          <span class="chat-sparkle" aria-hidden="true">✳</span>
+        </header>
+
+        <div class="chat-history" id="chat-history" role="log" aria-live="polite" aria-relevant="additions">
+          <p class="chat-day-label">HOY</p>
+          <div class="message-row">
+            <div class="message-avatar" aria-hidden="true"></div>
+            <div class="message message-bot">
+              <p>¡Hola! 👋 Soy Lalu, tu compa de cursada. Podés preguntarme por fechas, entregas o avisos.</p>
+              <time datetime="09:00">09:00</time>
+            </div>
+          </div>
+        </div>
+
+        <form class="chat-composer" id="chat-form">
+          <label class="visually-hidden" for="chat-input">Escribí un mensaje</label>
+          <input
+            id="chat-input"
+            name="message"
+            type="text"
+            placeholder="Escribile a Lalu..."
+            autocomplete="off"
+            required
+          >
+          <button class="send-button" type="submit" aria-label="Enviar mensaje">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m4 4 17 8-17 8 3-8-3-8Zm3 8h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+        <p class="chat-footnote">Lalu te ayuda a organizar la cursada ✨</p>
+      </aside>
+    </main>
+
+    <dialog class="event-dialog" id="event-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">AGENDA COMPARTIDA</p>
+          <h2 id="dialog-title">Nuevo evento</h2>
+        </div>
+        <button class="icon-button" id="close-event-dialog" type="button" aria-label="Cerrar formulario">×</button>
+      </div>
+
+      <form id="event-form">
+        <div class="form-field">
+          <label for="event-title">Título o materia</label>
+          <input id="event-title" name="title" type="text" placeholder="Ej. Parcial de Historia" maxlength="80" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="event-category">Categoría</label>
+            <select id="event-category" name="category" required>
+              <option value="" disabled selected>Elegí una categoría</option>
+              <option value="examen">Examen</option>
+              <option value="aviso">Aviso</option>
+              <option value="entrega">Entrega</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="event-date">Fecha</label>
+            <input id="event-date" name="date" type="date" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="event-description">Descripción <span>(opcional)</span></label>
+          <textarea id="event-description" name="description" rows="3" maxlength="280" placeholder="Agregá detalles que puedan servirle al curso..."></textarea>
+        </div>
+
+        <div class="dialog-actions">
+          <button class="button button-secondary" id="cancel-event" type="button">Cancelar</button>
+          <button class="button button-primary" type="submit">Guardar evento <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
