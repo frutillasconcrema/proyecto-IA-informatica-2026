@@ -42,7 +42,18 @@ function createEventCard(event) {
 
   const category = document.createElement("p");
   category.className = "event-category";
-  category.textContent = event.category;
+
+  const categoryDetails = {
+    examen: { icon: "📝", label: "Examen" },
+    aviso: { icon: "📣", label: "Aviso docente" },
+    entrega: { icon: "📚", label: "Entrega / tarea" },
+  };
+  const categoryDetail = categoryDetails[event.category];
+  const categoryIcon = document.createElement("span");
+  categoryIcon.className = "event-category-icon";
+  categoryIcon.setAttribute("aria-hidden", "true");
+  categoryIcon.textContent = categoryDetail.icon;
+  category.append(categoryIcon, document.createTextNode(categoryDetail.label));
 
   const title = document.createElement("h2");
   title.className = "event-title";
@@ -137,10 +148,61 @@ function addMessage(text, sender, time = new Date()) {
 }
 
 function createChatReply(question) {
-  const matchingEvents = events.filter((event) => {
-    const searchableText = `${event.title} ${event.description}`.toLocaleLowerCase("es");
-    return question.split(/\s+/).some((word) => word.length > 3 && searchableText.includes(word));
+  const normalizedQuestion = question
+    .toLocaleLowerCase("es")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  const isPendingQuestion = /\b(pendiente(?:s)?|por hacer|tengo que hacer|me falta(?:n)?|debo hacer|tareas?)\b/.test(normalizedQuestion);
+  const today = new Date();
+  const todayString = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  if (isPendingQuestion) {
+    const pendingEvents = events
+      .filter((event) => event.date >= todayString)
+      .sort((first, second) => first.date.localeCompare(second.date));
+
+    if (pendingEvents.length === 0) {
+      return "no tenes nada pendiente!";
+    }
+
+    const details = pendingEvents
+      .slice(0, 3)
+      .map((event) => `${event.title}: ${formatDate(event.date)}`)
+      .join(" · ");
+    return `Tenés pendiente: ${details}.`;
+  }
+
+  const categoryIntent = /\b(examen(?:es)?|prueba(?:s)?|parcial(?:es)?|evaluacion(?:es)?)\b/.test(normalizedQuestion)
+    ? "examen"
+    : /\b(aviso(?:s)?|entrega(?:s)?|tarea(?:s)?)\b/.exec(normalizedQuestion)?.[0];
+  const intentWords = new Set([
+    "fecha", "fechas", "cuando", "dia", "dias", "examen", "examenes",
+    "prueba", "pruebas", "parcial", "parciales", "evaluacion", "evaluaciones",
+    "aviso", "avisos", "entrega", "entregas", "tarea", "tareas",
+    "tengo", "tenes", "tienes", "tenemos", "hay", "algun", "alguna",
+    "algunos", "algunas", "quiero", "saber", "curso", "clase",
+  ]);
+  const terms = normalizedQuestion
+    .split(/\s+/)
+    .map((word) => word.replace(/[¿?¡!,.:;]/g, ""))
+    .filter((word) => word.length > 3 && !intentWords.has(word));
+
+  let matchingEvents = events.filter((event) => {
+    const searchableText = `${event.title} ${event.description}`
+      .toLocaleLowerCase("es")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return terms.some((word) => searchableText.includes(word));
   });
+
+  if (matchingEvents.length === 0 && terms.length === 0 && categoryIntent) {
+    const category = categoryIntent === "examen" ? "examen" : categoryIntent.startsWith("aviso") ? "aviso" : "entrega";
+    matchingEvents = events.filter((event) => event.category === category);
+  }
 
   if (matchingEvents.length > 0) {
     const details = matchingEvents
@@ -148,6 +210,10 @@ function createChatReply(question) {
       .map((event) => `${event.title}: ${formatDate(event.date)}`)
       .join(" · ");
     return `Encontré esto en la agenda: ${details}.`;
+  }
+
+  if (/\b(fecha|fechas|cuando|dia|dias|examen(?:es)?|prueba(?:s)?|parcial(?:es)?|evaluacion(?:es)?)\b/.test(normalizedQuestion)) {
+    return "upsss eso no lo se....:(";
   }
 
   if (events.length === 0) {
